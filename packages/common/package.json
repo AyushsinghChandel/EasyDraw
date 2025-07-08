@@ -2,10 +2,10 @@
   "name": "@repo/common",
   "version": "1.0.0",
   "exports":{
-    "./types" : "./src/types.ts"
+    "./types" : "./dist/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -b"
   },
   "keywords": [],
   "devDependencies": {
