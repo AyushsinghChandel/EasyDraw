@@ -1,12 +1,10 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import { middleware } from "./middleware";
 import {CreateUserSchema, SigninSchema, CreateRoomSchema} from "@repo/common/types"
-
-dotenv.config({path:"../../.env"})
-const JWT_SECRET = process.env.JWT_SECRET;
+import {JWT_SECRET} from "@repo/backend-common/config";
 const app = express();
+app.use(express.json());
 
 app.post("/signup", (req,res) => {
     const data = CreateUserSchema.safeParse(req.body);

@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-dotenv.config({path:"../../.env"});
-const JWT_SECRET = process.env.JWT_SECRET as string;
-
+import {JWT_SECRET} from "@repo/backend-common/config";
+console.log(JWT_SECRET);
 export function middleware(req:Request, res: Response, next:NextFunction){
     const token = req.headers["authorization"]?? "";
     
