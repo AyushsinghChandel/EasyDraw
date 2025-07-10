@@ -37,12 +37,75 @@ app.post("/signup", async (req,res) => {
     }
 })
 
-app.post("/signin", (req,res) => {
-    
+app.post("/signin", async (req,res) => {
+    const parsedData = SigninSchema.safeParse(req.body);
+    if(!parsedData.success){
+        console.log(parsedData.error);
+        res.json({
+            mesaage: "Incorrect Inputs"
+        })
+        return;
+    }
+    try{
+        const user = await prismaClient.user.findFirst({
+            where: {
+                email: parsedData.data.username
+            }
+        })
+        if(!user){
+            res.status(403).json({
+                message : "this email doesn't exist"
+            })
+            return;
+        }
+        const passwordMatch = bcrypt.compare(parsedData.data.password,user.password);
+        if(!passwordMatch){
+            res.status(403).json({
+                message: "Authorization failed"
+            })
+            return;
+        }
+        const token = jwt.sign({
+            userId: user.id
+        },JWT_SECRET);
+
+        res.json({
+            token
+        })
+
+    }catch(e){
+        res.status(411).json({
+            message: "Unexpected error happended try after sometime"
+        });
+    }
 })
 
-app.post("/room", middleware, (req,res) => {
-    
+app.post("/room", middleware, async (req,res) => {
+    const parsedData = CreateRoomSchema.safeParse(req.body);
+    if(!parsedData.success){
+        res.json({
+            message: "Inccorect Input"
+        })
+        return;
+    }
+    try{
+        //@ts-ignore
+    const userId = req.userId;
+
+    const room =  await prismaClient.room.create({
+        data: {
+            slug: parsedData.data.name,
+            adminId: userId
+        }
+    })
+    res.json({
+        roomId : room.id
+    })
+    }catch(e){
+        res.status(411).json({
+            message: "room already exist with this name"
+        })
+    }
 })
 
 app.listen(3001);
