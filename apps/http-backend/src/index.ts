@@ -5,8 +5,16 @@ import {CreateUserSchema, SigninSchema, CreateRoomSchema} from "@repo/common/typ
 import {JWT_SECRET} from "@repo/backend-common/config";
 import {prismaClient} from "@repo/db/client";
 import bcrypt from "bcrypt";
+import cors from "cors";
+
+
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin: 'http://localhost:3001',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true, 
+}));
 
 app.post("/signup", async (req,res) => {
     const parsedData = CreateUserSchema.safeParse(req.body);
@@ -136,4 +144,4 @@ app.get("/room/:slug", async (req,res) => {
     })
 })
 
-app.listen(3001);
+app.listen(3002);
