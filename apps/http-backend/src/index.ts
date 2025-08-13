@@ -99,7 +99,6 @@ app.post("/room", middleware, async (req,res) => {
     try{
         //@ts-ignore
     const userId = req.userId;
-
     const room =  await prismaClient.room.create({
         data: {
             slug: parsedData.data.name,
@@ -143,5 +142,23 @@ app.get("/room/:slug", async (req,res) => {
         room
     })
 })
+
+app.get("/my-rooms", middleware, async (req, res) => {
+    //@ts-ignore
+    const userId = req.userId;
+
+    const rooms = await prismaClient.room.findMany({
+        where: {
+            adminId: userId
+        },
+        orderBy: {
+            id: 'desc'
+        }
+    });
+
+    res.json({
+        rooms
+    });
+});
 
 app.listen(3002);
