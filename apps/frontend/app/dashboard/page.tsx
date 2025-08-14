@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
@@ -16,8 +16,12 @@ export default function Dashboard() {
   const [newRoomName, setNewRoomName] = useState('');
   const [joinRoomSlug, setJoinRoomSlug] = useState('');
   const [userRooms, setUserRooms] = useState<Room[]>([]);
-  const router = useRouter();
+  
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null); 
   useEffect(() => {
     const email = localStorage.getItem('email');
     const token = localStorage.getItem('token');
@@ -47,7 +51,20 @@ export default function Dashboard() {
     fetchUserRooms();
   }, [router]);
 
-const handleCreateRoom = async () => {
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleCreateRoom = async () => {
     if (!newRoomName.trim()) {
       alert('Please enter a room name.');
       return;
@@ -66,13 +83,9 @@ const handleCreateRoom = async () => {
       router.push(`/canvas/${response.data.roomId}`);
     } catch (error) {
       console.error('Failed to create room:', error);
-      
-      // Check if the error is from Axios and has a response from the server
       if (axios.isAxiosError(error) && error.response) {
-        // Show the specific error message from your backend
         alert(`Error: ${error.response.data.message}`);
       } else {
-        // Show a generic message for other types of errors
         alert('An unexpected error occurred. Please try again.');
       }
     }
@@ -96,13 +109,35 @@ const handleCreateRoom = async () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    router.push('/');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-white">
       <header className="py-4 px-4 sm:px-6 lg:px-8 border-b border-gray-800">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-400">EasyDraw</h1>
-          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-            {userInitial}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-blue-500"
+            >
+              {userInitial}
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 border border-gray-700">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -110,8 +145,7 @@ const handleCreateRoom = async () => {
       <main className="py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-8">Your Dashboard</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <div className="bg-gray-900 p-6 rounded-xl border border-gray-800 flex flex-col gap-6">
               <div>
                 <h3 className="text-xl font-semibold mb-3">Create a New Room</h3>
@@ -153,13 +187,11 @@ const handleCreateRoom = async () => {
                 </div>
               </div>
             </div>
-
             <div className="bg-gray-900 p-6 rounded-xl border border-gray-800">
               <h3 className="text-xl font-semibold mb-4">My Rooms</h3>
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {userRooms.length > 0 ? (
                   userRooms.map((room) => (
-                    // FIX: Corrected path for the Link component
                     <Link
                       key={room.id}
                       href={`/canvas/${room.id}`}

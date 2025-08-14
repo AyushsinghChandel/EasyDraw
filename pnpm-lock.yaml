@@ -241,19 +241,6 @@ importers:
         specifier: ^8.34.0
         version: 8.34.0(eslint@9.29.0(jiti@2.4.2))(typescript@5.8.2)
 
-  packages/frontend-common:
-    dependencies:
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.15.3
-      dotenv:
-        specifier: ^17.0.1
-        version: 17.0.1
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-
   packages/typescript-config: {}
 
   packages/ui:
